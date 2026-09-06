@@ -37,10 +37,6 @@ Realizado en el marco del trabajo práctico de la materia **Técnicas y Herramie
 
 <table>
 <tr>
-<td align="center" width="50%"><img src="docs/screenshots/01-noticias-publicas.png" width="420"><br><sub><b>Noticias públicas</b></sub></td>
-<td align="center" width="50%"><img src="docs/screenshots/02-login.png" width="420"><br><sub><b>Login</b></sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/screenshots/03-recuperar-contrasena.png" width="420"><br><sub><b>Recuperar contraseña</b></sub></td>
 <td align="center"><img src="docs/screenshots/13-cambiar-clave.png" width="420"><br><sub><b>Cambiar contraseña</b></sub></td>
 </tr>
