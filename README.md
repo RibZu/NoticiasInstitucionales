@@ -1,96 +1,76 @@
 # 📰 Módulo de Publicación de Noticias Institucionales
 
-Sistema de gestión editorial con flujo de aprobación (Borrador → Validación → Publicación) construido en PHP nativo + MySQL, sin frameworks.
+![PHP](https://img.shields.io/badge/PHP-8-777BB4?logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-MariaDB-4479A1?logo=mysql&logoColor=white)
+![Arquitectura](https://img.shields.io/badge/Arquitectura-MVC%20manual-2c3e50)
+![Proyecto](https://img.shields.io/badge/Proyecto-Académico%20%2F%20Portfolio-orange)
 
-**Trabajo Integrador — Parte 1** · Materia **Técnicas y Herramientas para el Desarrollo Web con Calidad** · **Tecnicatura Universitaria en Web** · Autor: **Riberi Zunino Simon**
+Sistema de gestión editorial con flujo de aprobación (Borrador → Validación → Publicación) para noticias institucionales, construido en **PHP plano + MySQL, sin frameworks**.
 
-> Este proyecto fue realizado en el marco de la carrera universitaria, puntualmente para la materia orientada a desarrollo y **testing** de aplicaciones web. No está pensado para producción: es una pieza de portfolio que muestra manejo de PHP plano, MySQL, control de acceso por roles y un flujo de negocio con múltiples estados.
+## 📌 Propósito
 
----
+Trabajo Integrador para la materia **Técnicas y Herramientas para el Desarrollo Web con Calidad** (Tecnicatura Universitaria en Web), enfocada en desarrollo y **testing** de aplicaciones web. Autor: **Riberi Zunino Simon**.
 
-## Tabla de contenidos
+El objetivo fue construir, sin ningún framework, un circuito editorial real con tres roles —**Editor**, **Validador** y **Administrador**— que no dejan publicar nada sin revisión, aplicando patrón **MVC manual**, sesiones PHP, subida de archivos, hashing de contraseñas y reglas de negocio no triviales (auto-expiración, prohibición de auto-validación, historial de auditoría).
 
-- [Descripción y propósito](#descripción-y-propósito)
-- [Funcionalidades](#funcionalidades)
-- [Arquitectura](#arquitectura)
-- [Modelo de datos (diagrama entidad-relación)](#modelo-de-datos-diagrama-entidad-relación)
-- [Stack técnico](#stack-técnico)
-- [Estructura de carpetas](#estructura-de-carpetas)
-- [Guía de instalación](#guía-de-instalación)
-- [Limitaciones conocidas](#limitaciones-conocidas)
-- [Decisiones técnicas y desafíos del desarrollo](#decisiones-técnicas-y-desafíos-del-desarrollo)
+Se publica como **pieza de portfolio**, no como producto terminado. La sección [⚠️ Limitaciones conocidas](#️-limitaciones-conocidas) es deliberadamente honesta sobre lo que faltaría corregir antes de exponer esto a internet.
 
----
+## ✨ Funcionalidades
 
-## Descripción y propósito
+**Autenticación y usuarios**
+- Login por email/clave contra la tabla `usuarios`, con `password_hash()` / `password_verify()` (bcrypt).
+- Sesión con 3 flags de rol (`es_editor`, `es_validador`, `es_admin`) combinables entre sí.
+- Alta de usuarios y asignación de roles, solo disponible para el Administrador.
+- Recuperación de contraseña (resetea a un valor temporal fijo) y cambio de contraseña propio.
 
-Este es un **CMS de noticias institucionales** pensado para una organización (por ejemplo, una escuela o instituto) que necesita que varias personas escriban contenido pero que nada se publique sin revisión. Implementa un circuito editorial de tres roles —**Editor**, **Validador** y **Administrador**— sobre un esquema de estados (`Borrador` → `Lista para Validación` → `Publicada` / `Para Corrección` → `Expirada`), con auditoría de cada cambio.
+**Noticias y flujo editorial**
+- Listado público de noticias `Publicada`, sin necesidad de login (`index.php`).
+- Alta de noticias por el Editor, con validación de longitud de título/descripción y de peso de imagen.
+- Envío manual a validación ("Enviar a Validar"), en vez de que cualquier edición dispare el cambio de estado.
+- Validación por un Validador: **Publicar** o **Mandar a Corregir** con comentario, con reglas de negocio server-side: un usuario no puede validar su propia noticia, y no se permite publicar dos noticias con el mismo título.
+- Circuito de corrección: la noticia rechazada vuelve a `Borrador` y el Editor ve la observación del Validador al reabrir el formulario.
+- Expiración automática: al entrar al panel se marca como `Expirada` toda noticia publicada que superó los días configurados (sin cron, verificación "al vuelo").
 
-Se muestra aquí como **pieza de portfolio**, no como producto terminado: el objetivo fue demostrar comprensión de un patrón **MVC manual** (sin CodeIgniter, Laravel ni ningún framework), manejo de sesiones PHP, subida de archivos, hashing de contraseñas y reglas de negocio no triviales (auto-expiración, prohibición de auto-validación, historial de auditoría), todo con las herramientas base que pide la cátedra. La sección de [Limitaciones conocidas](#limitaciones-conocidas) es deliberadamente honesta: se dejaron señaladas las cosas que en un entorno real habría que corregir antes de exponer esto a internet.
+**Panel de administración**
+- Vista única (`panel.php`) que cambia sus acciones según el rol de la sesión activa.
+- Panel exclusivo de Admin para configurar días de expiración y peso máximo de imagen, y para eliminar usuarios o noticias.
 
-## Funcionalidades
+**Auditoría**
+- Historial por noticia: cada creación, edición y cambio de estado queda registrado con usuario, acción y fecha/hora exacta.
 
-### Noticias públicas (sin login)
-Cualquier visitante puede ver, en `index.php`, el listado de noticias con estado `Publicada`, ordenadas por fecha de publicación descendente.
+## 📸 Capturas de pantalla
 
-![Noticias públicas](docs/screenshots/01-noticias-publicas.png)
+<table>
+<tr>
+<td align="center" width="50%"><img src="docs/screenshots/01-noticias-publicas.png" width="420"><br><sub><b>Noticias públicas</b> (sin login)</sub></td>
+<td align="center" width="50%"><img src="docs/screenshots/02-login.png" width="420"><br><sub><b>Login</b></sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/screenshots/03-recuperar-contrasena.png" width="420"><br><sub><b>Recuperar contraseña</b></sub></td>
+<td align="center"><img src="docs/screenshots/13-cambiar-clave.png" width="420"><br><sub><b>Cambiar contraseña</b></sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/screenshots/05-panel-editor.png" width="420"><br><sub><b>Panel del Editor</b></sub></td>
+<td align="center"><img src="docs/screenshots/06-panel-validador.png" width="420"><br><sub><b>Panel del Validador</b></sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/screenshots/09-crear-noticia.png" width="420"><br><sub><b>Crear noticia</b></sub></td>
+<td align="center"><img src="docs/screenshots/10-editar-noticia-correccion.png" width="420"><br><sub><b>Editar noticia en corrección</b></sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/screenshots/11-validar-noticia.png" width="420"><br><sub><b>Validación editorial</b></sub></td>
+<td align="center"><img src="docs/screenshots/12-historial.png" width="420"><br><sub><b>Historial de auditoría</b></sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/screenshots/04-panel-admin.png" width="420"><br><sub><b>Panel Admin</b> — lista general de noticias</sub></td>
+<td align="center"><img src="docs/screenshots/07-registrar-usuario.png" width="420"><br><sub><b>Registrar usuario</b> (solo Admin)</sub></td>
+</tr>
+<tr>
+<td align="center" colspan="2"><img src="docs/screenshots/08-panel-admin-config.png" width="420"><br><sub><b>Panel Admin</b> — configuración del sistema y gestión de usuarios/noticias</sub></td>
+</tr>
+</table>
 
-### Login con contraseña hasheada
-Autenticación por email/clave contra la tabla `usuarios`, con `password_hash()` / `password_verify()` (bcrypt). La sesión guarda el id del usuario y sus tres flags de rol (`es_editor`, `es_validador`, `es_admin`).
-
-![Login](docs/screenshots/02-login.png)
-
-### Recuperación de contraseña (simulada, sin email real)
-El usuario ingresa su email y, si existe, el sistema **resetea la clave a un valor fijo (`123456`)** y lo muestra en pantalla. No hay envío de correo ni PHPMailer: es un flujo pensado para un entorno local de pruebas, no para producción (ver [Limitaciones](#limitaciones-conocidas)).
-
-![Recuperar contraseña](docs/screenshots/03-recuperar-contrasena.png)
-
-### Panel por rol
-Una misma vista (`panel.php`) cambia sus acciones disponibles según los flags de sesión: el Editor ve "Crear Nueva Noticia" y un botón para enviar sus borradores a validación; el Validador ve el botón "VALIDAR" sobre las noticias en `Lista para Validación`; el Administrador ve accesos a gestión de usuarios y configuración.
-
-| Vista del Editor | Vista del Validador |
-|---|---|
-| ![Panel editor](docs/screenshots/05-panel-editor.png) | ![Panel validador](docs/screenshots/06-panel-validador.png) |
-
-### Alta y gestión de usuarios (solo Admin)
-El Administrador registra usuarios y les asigna cualquier combinación de roles (Editor / Validador / Admin) mediante checkboxes.
-
-![Registrar usuario](docs/screenshots/07-registrar-usuario.png)
-
-### Panel de administración: configuración + gestión
-Desde un panel exclusivo, el Admin define los **días de expiración** de una noticia publicada y el **peso máximo de imagen** permitido (ambos se guardan en la tabla `configuracion` y se aplican dinámicamente), además de poder eliminar usuarios o noticias.
-
-![Panel admin - configuración](docs/screenshots/08-panel-admin-config.png)
-
-### Alta de noticias con validaciones de formulario
-El Editor crea una noticia con título (10–100 caracteres), descripción (mínimo 50 caracteres) e imagen opcional. La imagen se valida contra el límite de peso configurado por el Admin antes de guardarse en disco.
-
-![Crear noticia](docs/screenshots/09-crear-noticia.png)
-
-### Circuito de corrección
-Si el Validador rechaza una noticia con un comentario, esta vuelve a `Borrador` y el Editor ve la observación del Validador al reabrir el formulario de edición.
-
-![Editar noticia en corrección](docs/screenshots/10-editar-noticia-correccion.png)
-
-### Validación editorial con regla anti-autoaprobación
-El Validador revisa el contenido completo (incluida la imagen) y decide **Publicar** o **Mandar a Corregir**, dejando un comentario opcional. El sistema impide que un usuario valide una noticia de la que él mismo es autor, y evita publicar dos noticias con el mismo título.
-
-![Validar noticia](docs/screenshots/11-validar-noticia.png)
-
-### Historial de auditoría
-Cada creación, edición y cambio de estado de una noticia queda registrado con usuario, acción y fecha/hora exacta en la tabla `historial`.
-
-![Historial](docs/screenshots/12-historial.png)
-
-### Expiración automática
-Al entrar al panel, se ejecuta una consulta que marca como `Expirada` toda noticia `Publicada` cuyos días desde la publicación superen el límite configurado — no hay un cron ni un job en segundo plano, la verificación ocurre "al vuelo" en cada carga de `panel.php`.
-
-### Cambio de contraseña propio
-Cualquier usuario autenticado puede cambiar su contraseña, con confirmación de coincidencia y longitud mínima de 4 caracteres.
-
-![Cambiar contraseña](docs/screenshots/13-cambiar-clave.png)
-
-## Arquitectura
+## 🏗️ Diagrama de arquitectura
 
 MVC manual en tres carpetas (`vistas/`, `controladores/`, `modelos/`), sin router ni autoload: cada vista apunta directamente al controlador que necesita por `action` del formulario, y cada controlador incluye a mano los modelos que usa.
 
@@ -155,9 +135,9 @@ flowchart TD
     V_panel -. "consulta SQL directa,&#10;sin pasar por modelos" .-> DB
 ```
 
-> **Nota de honestidad arquitectónica:** `panel.php` e `index.php` ejecutan `mysqli_query()` directamente sobre la vista (incluyendo el `UPDATE` que expira noticias vencidas), sin pasar por la capa de modelos. Es una inconsistencia real del proyecto, no un simplificación del diagrama — queda documentada en [Limitaciones conocidas](#limitaciones-conocidas).
+> **Nota de honestidad arquitectónica:** `panel.php` e `index.php` ejecutan `mysqli_query()` directamente sobre la vista (incluyendo el `UPDATE` que expira noticias vencidas), sin pasar por la capa de modelos. Es una inconsistencia real del proyecto, no una simplificación del diagrama — queda documentada en [⚠️ Limitaciones conocidas](#️-limitaciones-conocidas).
 
-## Modelo de datos (diagrama entidad-relación)
+## 🗂️ Diagrama entidad-relación
 
 ```mermaid
 erDiagram
@@ -201,20 +181,20 @@ erDiagram
     }
 ```
 
-> `configuracion` es una tabla de fila única (singleton, `id = 1`) sin relación con el resto; guarda parámetros globales del sistema. Ninguna de las relaciones de arriba está declarada como `FOREIGN KEY` en el esquema real — ver [Limitaciones conocidas](#limitaciones-conocidas).
+> `configuracion` es una tabla de fila única (singleton, `id = 1`) sin relación con el resto; guarda parámetros globales del sistema. Ninguna de las relaciones de arriba está declarada como `FOREIGN KEY` en el esquema real — ver [⚠️ Limitaciones conocidas](#️-limitaciones-conocidas).
 
-## Stack técnico
+## 🛠️ Stack técnico
 
 | Capa | Tecnología |
 |---|---|
-| Lenguaje backend | PHP 8 (procedural, sin frameworks) |
-| Base de datos | MySQL / MariaDB (driver `mysqli`) |
+| Backend | PHP 8 (procedural, sin frameworks) |
+| Base de datos | MySQL / MariaDB, acceso vía `mysqli` |
 | Frontend | HTML + CSS plano (`vistas/estilos.css`), sin JS ni librerías |
-| Sesiones | `$_SESSION` nativas de PHP |
-| Hashing de contraseñas | `password_hash()` / `password_verify()` (bcrypt) |
+| Autenticación | Sesiones nativas de PHP + `password_hash()` / `password_verify()` |
 | Entorno de desarrollo | XAMPP (Apache + MariaDB + phpMyAdmin) |
+| Testing | Manual, en el marco de la cátedra (ver [Limitaciones](#️-limitaciones-conocidas)) |
 
-## Estructura de carpetas
+## 📁 Estructura de carpetas
 
 ```
 .
@@ -248,7 +228,7 @@ erDiagram
 └── docs/screenshots/          # Capturas usadas en este README
 ```
 
-## Guía de instalación
+## 🚀 Instalación
 
 1. **Requisitos**: un entorno con PHP 7.4+ y MySQL/MariaDB — lo más simple es [XAMPP](https://www.apachefriends.org/).
 2. **Clonar el repositorio**
@@ -264,7 +244,7 @@ erDiagram
    ```php
    $conexion = mysqli_connect("localhost", "root", "", "noticias_db");
    ```
-   Si tu entorno usa otro usuario/clave, editá ese archivo (ver [Limitaciones conocidas](#limitaciones-conocidas)).
+   Si tu entorno usa otro usuario/clave, editá ese archivo (ver [⚠️ Limitaciones conocidas](#️-limitaciones-conocidas)).
 6. **Servir el proyecto.** Copiá la carpeta completa dentro de `htdocs` (XAMPP) o levantá el servidor embebido de PHP desde la raíz del proyecto:
    ```bash
    php -S localhost:8000
@@ -278,7 +258,7 @@ erDiagram
 
    Desde ese usuario se pueden crear los roles de Editor y Validador para probar el circuito completo.
 
-## Limitaciones conocidas
+## ⚠️ Limitaciones conocidas
 
 Estas son limitaciones reales del código, dejadas a propósito sin corregir porque el objetivo del trabajo era otro (y porque mostrarlas con honestidad tiene más valor de portfolio que ocultarlas):
 
@@ -287,12 +267,12 @@ Estas son limitaciones reales del código, dejadas a propósito sin corregir por
 - **Sin protección CSRF ni sanitización de salida.** Los formularios no llevan token anti-CSRF, y datos como el título de una noticia se imprimen en las vistas sin `htmlspecialchars()`, lo que además abre la puerta a XSS reflejado/almacenado.
 - **"Recuperar contraseña" no envía email.** Resetea la clave a un valor fijo (`123456`) y lo muestra en pantalla en lugar de enviarlo por correo (no hay PHPMailer ni SMTP configurado). Válido para un entorno local, inaceptable en producción.
 - **Sin `FOREIGN KEY` reales en el esquema.** `noticias.autor_id` y `historial.noticia_id` son enteros sueltos; la integridad referencial (por ejemplo, borrar el historial al borrar una noticia) se resuelve a mano en el código PHP (`eliminarNoticia()`), no en la base de datos.
-- **Reglas de negocio mezcladas con la vista.** `panel.php` ejecuta un `UPDATE` de expiración automática directamente en la vista, saltándose la capa de modelos — ver la nota en [Arquitectura](#arquitectura).
+- **Reglas de negocio mezcladas con la vista.** `panel.php` ejecuta un `UPDATE` de expiración automática directamente en la vista, saltándose la capa de modelos — ver la nota en [🏗️ Diagrama de arquitectura](#️-diagrama-de-arquitectura).
 - **Subida de archivos sin validar tipo real ni sanitizar el nombre.** Solo se valida el peso (`$_FILES['imagen']['size']`); el nombre original del archivo se usa tal cual para guardarlo en `imagenes/`, sin chequear la extensión/mimetype ni evitar colisiones o path traversal.
 - **Contraseñas de un solo factor y sin política de complejidad**, más allá de un mínimo de 4 caracteres al cambiarla.
-- **Sin tests automatizados.** El "testing" del proyecto, en el marco de la materia, fue manual (ver la sección siguiente).
+- **Sin tests automatizados.** El "testing" del proyecto, en el marco de la materia, fue manual.
 
-## Decisiones técnicas y desafíos del desarrollo
+## 📚 Decisiones técnicas y desafíos del desarrollo
 
 *(Extracto del informe original entregado para la cátedra.)*
 
@@ -308,3 +288,7 @@ Estas son limitaciones reales del código, dejadas a propósito sin corregir por
 - **Envío manual a validación (supuesto agregado):** el Editor decide cuándo su borrador pasa a `Lista para Validación` con un botón explícito, en vez de que cualquier edición dispare el cambio de estado.
 - **Comentarios de corrección (supuesto agregado):** cuando el Validador rechaza una noticia, puede dejar por escrito qué corregir; ese texto se le muestra al Editor al reabrir el formulario.
 - **Mensajes vía sesión, sin JS:** los errores/éxitos de los formularios se muestran con variables de sesión (carteles rojos/verdes), para no perder los datos ya cargados por el usuario ni depender de JavaScript.
+
+## 📄 Licencia
+
+Este repositorio no tiene un archivo de licencia. Si querés reutilizarlo, se recomienda agregar una (por ejemplo MIT) antes de tomarlo como base para otro proyecto.
