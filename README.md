@@ -65,11 +65,11 @@ Realizado en el marco del trabajo práctico de la materia **Técnicas y Herramie
 
 MVC manual sin router ni autoload: cada vista llama a su controlador por `action`, y cada controlador incluye a mano los modelos que usa.
 
-**Diagrama:** [architecture.html](docs/diagrams/architecture.html)
+![Diagrama de arquitectura](docs/diagrams/architecture.png)
 
 ## 🗂️ Diagrama entidad-relación
 
-**Diagrama:** [entity-relationship.html](docs/diagrams/entity-relationship.html)
+![Diagrama entidad-relación](docs/diagrams/entity-relationship.png)
 
 ## 🛠️ Stack técnico
 
