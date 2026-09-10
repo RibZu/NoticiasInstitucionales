@@ -65,100 +65,11 @@ Realizado en el marco del trabajo práctico de la materia **Técnicas y Herramie
 
 MVC manual sin router ni autoload: cada vista llama a su controlador por `action`, y cada controlador incluye a mano los modelos que usa.
 
-```mermaid
-flowchart TD
-    Usuario((Usuario / Navegador))
-
-    subgraph Vistas["vistas/*.php"]
-        V_login[login.php]
-        V_panel[panel.php]
-        V_form[form_noticia.php]
-        V_validar[validar_noticia.php]
-        V_admin[vista_admin.php]
-        V_usuarios[form_usuarios.php]
-    end
-
-    subgraph Controladores["controladores/*.php"]
-        C_login[loginController.php]
-        C_noticia[noticiaController.php]
-        C_admin[adminController.php]
-        C_usuario[usuarioController.php]
-        C_recuperar[recuperarController.php]
-        C_clave[cambiarContraController.php]
-    end
-
-    subgraph Modelos["modelos/*.php"]
-        M_bd[bd.php]
-        M_usuario[Usuario.php]
-        M_noticia[Noticia.php]
-        M_historial[Historial.php]
-    end
-
-    DB[(MySQL / MariaDB<br/>noticias_db)]
-
-    Usuario --> V_login & V_panel & V_form & V_validar & V_admin & V_usuarios
-
-    V_login -- POST --> C_login
-    V_form -- POST --> C_noticia
-    V_validar -- POST --> C_noticia
-    V_admin -- POST --> C_admin
-    V_usuarios -- POST --> C_usuario
-
-    C_login --> M_bd
-    C_noticia --> M_noticia & M_historial
-    C_admin --> M_usuario & M_noticia
-    C_usuario --> M_usuario
-    C_recuperar --> M_bd
-    C_clave --> M_bd
-
-    M_usuario & M_noticia & M_historial & M_bd --> DB
-
-    V_panel -. "SQL directo,&#10;sin pasar por modelos" .-> DB
-```
+![Diagrama de arquitectura](docs/diagrams/architecture.png)
 
 ## 🗂️ Diagrama entidad-relación
 
-```mermaid
-erDiagram
-    USUARIOS ||--o{ NOTICIAS : "autor_id"
-    NOTICIAS ||--o{ HISTORIAL : "noticia_id"
-
-    USUARIOS {
-        int id PK
-        varchar nombre
-        varchar email
-        varchar clave "hash bcrypt"
-        tinyint es_editor
-        tinyint es_validador
-        tinyint es_admin
-    }
-
-    NOTICIAS {
-        int id PK
-        varchar titulo
-        text descripcion
-        varchar imagen
-        varchar estado "Borrador / Validación / Publicada / Corrección / Expirada"
-        varchar comentario_correccion
-        datetime fecha_creacion
-        datetime fecha_publicacion
-        int autor_id FK
-    }
-
-    HISTORIAL {
-        int id PK
-        int noticia_id FK
-        varchar nombre_usuario
-        varchar accion_realizada
-        datetime fecha_hora
-    }
-
-    CONFIGURACION {
-        int id PK
-        int dias_expiracion
-        int max_peso_imagen
-    }
-```
+![Diagrama entidad-relación](docs/diagrams/entity-relationship.png)
 
 ## 🛠️ Stack técnico
 
